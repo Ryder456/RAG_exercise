@@ -120,14 +120,19 @@ def process_file(uploaded_file) -> tuple:
         if not chunks:
             return ("error", "文件中未提取到有效文本")
 
-        # 4. 存入向量库
-        ids = [f"{file_hash}_{i}" for i in range(len(chunks))]
-        service.vectorstore.add_texts(
-            texts=chunks,
-            metadatas=[{"source": file_name}] * len(chunks),
-            ids=ids,
-        )
-        service.vectorstore.save_local(Config.persist_directory)
+        # 4. 分批存入向量库（每批最多 10 条，兼容 DashScope 限制）
+        batch_size = 10
+        total_chunks = len(chunks)
+        for i in range(0, total_chunks, batch_size):
+            batch_chunks = chunks[i:i + batch_size]
+            # 用哈希和批次序号生成唯一 ID
+            ids = [f"{file_hash}_{i + idx}" for idx in range(len(batch_chunks))]
+            service.vectorstore.add_texts(
+                texts=batch_chunks,
+                metadatas=[{"source": file_name}] * len(batch_chunks),
+                ids=ids,
+            )
+        service.vectorstore.save_local(Config.persist_directory)  # 最后统一保存
 
         # 5. 更新哈希记录
         processed_hashes.add(file_hash)
