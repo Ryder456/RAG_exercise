@@ -1,0 +1,21 @@
+# 向量库数据
+faiss_index/
+
+# 聊天历史记录
+chat_histories/
+
+# 已处理文件哈希记录
+processed_hashes.txt
+
+# Python 缓存
+__pycache__/
+*.pyc
+
+# 环境变量文件
+.env
+
+# IDE
+.vscode/
+.idea/
+
+date/
